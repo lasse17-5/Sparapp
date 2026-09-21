@@ -240,6 +240,15 @@
     align-items:center;
   }
 
+  /* ---- Dino image stack (Bild statt Formen) ---- */
+  .dino-wrap{ position:relative; width:100%; aspect-ratio: 450 / 560; }
+  .dino-stack{ position:relative; width:100%; height:100%; }
+  .dino-img{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; display:block; }
+  .dino-outline{ opacity:.9; }
+  .dino-color-clip{ position:absolute; inset:0; overflow:hidden; transition: clip-path .35s ease; }
+  .dino-color.sad{ filter: hue-rotate(240deg) saturate(1.4) brightness(.95); }
+  .dino-tears{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+
   /* ---- Crying dino banner ---- */
   .cry-banner{
     display:flex;
@@ -248,16 +257,16 @@
     background: var(--red-bg);
     border:2.5px solid var(--red);
     border-radius:20px;
-    padding:.8rem;
+    padding:.7rem .9rem;
     margin-bottom:1rem;
   }
-  .cry-banner svg{ width:64px; height:52px; flex-shrink:0; }
+  .cry-banner .dino-wrap{ width:60px; flex-shrink:0; }
   .cry-banner .txt{ font-weight:800; color:#8a1f1f; font-size:.95rem; }
   .cry-banner .txt small{ display:block; font-weight:600; color:#a34141; font-size:.78rem; margin-top:.15rem;}
 
   /* ---- Goal card dino ---- */
   .goal-card{ display:flex; align-items:center; gap:.9rem; }
-  .goal-card .dino-wrap{ width:78px; height:64px; flex-shrink:0; }
+  .goal-card .dino-wrap{ width:70px; flex-shrink:0; }
   .goal-card .info{ flex:1; }
   .goal-card .bar-mini{
     height:10px; background:var(--dino-empty); border-radius:6px; overflow:hidden; margin-top:.4rem;
@@ -266,7 +275,7 @@
   .goal-card .bar-mini .fill{ height:100%; background:var(--accent-2); }
 
   .goal-hero{ text-align:center; margin-bottom:1.2rem; }
-  .goal-hero .dino-wrap{ width:220px; height:180px; margin:0 auto; }
+  .goal-hero .dino-wrap{ width:200px; margin:0 auto; }
   .goal-hero .nums{ font-family:'Baloo 2',cursive; font-size:1.7rem; margin-top:.3rem; }
   .goal-hero .nums small{ font-family:'Nunito'; font-size:.9rem; color:var(--muted); font-weight:700; }
 
@@ -389,46 +398,29 @@ function themeFor(percent){
 }
 
 /* ---------------------------------------------------------
-   DINO SVG (used for Sparziele + weinender Dino)
+   DINO-BILD (Umriss + Farbversion, wird von unten nach oben ausgemalt)
 --------------------------------------------------------- */
-// Ein wiederverwendbarer Dino-Umriss als <symbol>, wird per <use> zweimal
-// gezeichnet: einmal grau (leer) und einmal farbig, geclippt nach Fortschritt.
-const DINO_SYMBOL = `
-<symbol id="dinoShape" viewBox="0 0 200 170">
-  <g>
-    <ellipse cx="95" cy="112" rx="58" ry="42"/>
-    <circle cx="152" cy="72" r="27"/>
-    <path d="M40 100 C15 95 8 118 2 108 C10 100 18 90 38 88 Z"/>
-    <path d="M78 60 L92 34 L100 62 Z"/>
-    <path d="M105 55 L118 28 L124 58 Z"/>
-    <path d="M130 55 L142 32 L146 58 Z"/>
-    <ellipse cx="70" cy="150" rx="16" ry="13"/>
-    <ellipse cx="112" cy="152" rx="16" ry="13"/>
-    <ellipse cx="150" cy="150" rx="14" ry="12"/>
-  </g>
-</symbol>`;
-
-function dinoSVG(percent, opts={}){
-  const id = 'clip-' + (opts.id || uid());
+// Zwei eigene Grafiken liegen im Ordner "images/":
+//   dino-outline.png -> der "leere" (graue) Zustand
+//   dino-color.png    -> der fertig ausgemalte Zustand
+// Per clip-path wird die Farbversion nur bis zur Fortschritts-Höhe angezeigt,
+// sodass der Dino wie ein Fülllevel von unten nach oben "ausgemalt" wird.
+function dinoImage(percent, opts={}){
   const p = Math.max(0, Math.min(100, percent));
-  const fillY = 170 * (1 - p/100);
-  const fillH = 170 * (p/100);
-  const eyeColor = opts.sad ? '#3a2b20' : '#3a2b20';
+  const hiddenFromTop = (100 - p).toFixed(1); // Prozent, die oben verdeckt bleiben
+  const sadClass = opts.sad ? ' sad' : '';
   return `
-  <svg viewBox="0 0 200 170" xmlns="http://www.w3.org/2000/svg">
-    ${DINO_SYMBOL}
-    <defs>
-      <clipPath id="${id}"><rect x="0" y="${fillY.toFixed(1)}" width="200" height="${fillH.toFixed(1)}"/></clipPath>
-    </defs>
-    <use href="#dinoShape" fill="var(--dino-empty)"/>
-    <g clip-path="url(#${id})"><use href="#dinoShape" fill="${opts.color || 'var(--accent-2)'}"/></g>
-    <circle cx="163" cy="65" r="4.5" fill="${eyeColor}"/>
+  <div class="dino-stack">
+    <img class="dino-img dino-outline" src="images/dino-outline.png" alt="">
+    <div class="dino-color-clip" style="clip-path: inset(${hiddenFromTop}% 0 0 0);">
+      <img class="dino-img dino-color${sadClass}" src="images/dino-color.png" alt="">
+    </div>
     ${opts.sad ? `
-      <path d="M154 55 Q163 50 172 55" stroke="${eyeColor}" stroke-width="3" fill="none" stroke-linecap="round"/>
-      <path d="M160 72 Q163 82 158 88" stroke="#5AB4E0" stroke-width="4" fill="none" stroke-linecap="round"/>
-      <path d="M170 74 Q174 86 168 92" stroke="#5AB4E0" stroke-width="4" fill="none" stroke-linecap="round"/>
-    ` : ''}
-  </svg>`;
+    <svg class="dino-tears" viewBox="0 0 450 560" xmlns="http://www.w3.org/2000/svg">
+      <path d="M296 78 C296 92 284 100 284 112 C284 121 290 128 298 128 C306 128 312 121 312 112 C312 100 296 92 296 78 Z" fill="#5AB4E0"/>
+      <path d="M326 96 C326 107 317 114 317 124 C317 132 322 137 328 137 C334 137 339 132 339 124 C339 114 326 107 326 96 Z" fill="#5AB4E0" opacity=".85"/>
+    </svg>` : ''}
+  </div>`;
 }
 
 /* ---------------------------------------------------------
@@ -503,7 +495,7 @@ function renderWeekDetail(){
 
     ${overBudget ? `
     <div class="cry-banner">
-      ${dinoSVG(100, {id:'cry-'+week.id, color:'var(--red)', sad:true})}
+      <div class="dino-wrap">${dinoImage(100, {sad:true})}</div>
       <div class="txt">Oje, Budget gesprengt!<small>Der Dino weint – ${(pct-100).toFixed(0)}% über dem Budget.</small></div>
     </div>` : ''}
 
@@ -556,7 +548,7 @@ function renderZieleList(){
     const pct = g.target>0 ? Math.min(100, g.saved/g.target*100) : 0;
     return `
     <div class="card goal-card" data-goal="${g.id}">
-      <div class="dino-wrap">${dinoSVG(pct, {id:'list-'+g.id, color:'var(--accent-2)'})}</div>
+      <div class="dino-wrap">${dinoImage(pct)}</div>
       <div class="info">
         <h3>${escapeHTML(g.name)}</h3>
         <div class="meta">${fmtMoney(g.saved)} von ${fmtMoney(g.target)}</div>
@@ -579,7 +571,7 @@ function renderGoalDetail(){
   viewEl.innerHTML = `
     <div class="back-link" id="back-to-goals">← Alle Ziele</div>
     <div class="goal-hero">
-      <div class="dino-wrap">${dinoSVG(pct, {id:'hero-'+goal.id, color:'var(--accent-2)'})}</div>
+      <div class="dino-wrap">${dinoImage(pct)}</div>
       <h3>${escapeHTML(goal.name)}</h3>
       <div class="nums">${fmtMoney(goal.saved)} <small>/ ${fmtMoney(goal.target)}</small></div>
       <div class="meta" style="margin-top:.2rem;">${pct.toFixed(0)}% geschafft · noch ${fmtMoney(remaining)} übrig</div>

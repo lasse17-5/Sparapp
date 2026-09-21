@@ -35,8 +35,19 @@ Einfach `index.html` doppelklicken bzw. im Browser öffnen.
 
 ```
 spardino/
-├── index.html   ← die komplette App (HTML, CSS, JS in einer Datei)
+├── index.html          ← die komplette App (HTML, CSS, JS)
+├── images/
+│   ├── dino-color.png     ← der fertig ausgemalte Dino
+│   └── dino-outline.png   ← der "leere" Dino (Umriss)
 └── README.md
 ```
 
-Da alles in einer Datei steckt, kannst du sie auch einfach anpassen: Farben, Texte und Beschriftungen findest du direkt im `<style>`- bzw. `<script>`-Block von `index.html`.
+Wichtig: Der Ordner `images/` muss beim Hochladen auf GitHub mit übertragen werden (nicht nur `index.html`), sonst fehlt dem Dino sein Bild.
+
+## Den Dino austauschen
+
+Willst du ein anderes Dino-Bild verwenden, ersetze einfach die beiden Dateien in `images/` durch deine eigenen (gleicher Dateiname, am besten mit transparentem Hintergrund und im Hochformat). Die App zeigt automatisch:
+- `dino-outline.png` als "leeren" Zustand
+- `dino-color.png` wird von unten nach oben passend zum Fortschritt eingeblendet
+
+Farben, Texte und das Layout findest du direkt im `<style>`- bzw. `<script>`-Block von `index.html`.
